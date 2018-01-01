@@ -48,6 +48,15 @@ int main(int argc, char *argv[]) {
             ring_buf2048_fill(&int_buf, test_fill, test_fill_len);
         }
 
+        const uint8_t copy_buf_len = 7;
+        my_int_type copy_buf[copy_buf_len];
+        if (ring_buf2048_len(&int_buf) > copy_buf_len) {
+            ring_buf2048_take(&int_buf, copy_buf, copy_buf_len);
+            for (int i = 0; i < copy_buf_len; ++i) {
+                printf("copy_buf[%d]: '%c'\n", i, (uint8_t)copy_buf[i]);
+            }
+        }
+
         // Print what's left
         while(ring_buf2048_has_data(&int_buf)) {
             printf("got: '%c'\n", (uint8_t)ring_buf2048_get(&int_buf));

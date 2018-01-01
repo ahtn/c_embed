@@ -74,10 +74,19 @@ static inline void type_name ## _fill (type_name ## _type *buf, data_type *fill_
     } \
 } \
 
+#define DEFINE_RING_BUF_TAKE_FUNCTION(size, ptr_type, data_type, type_name) \
+static inline void type_name ## _take (type_name ## _type *buf, data_type *dest, ptr_type take_len) { \
+    assert((ptr_type)take_len < (ptr_type)RING_BUF_LEN(size, buf)); \
+    while (take_len--) { \
+        *dest++ = buf->data[buf->head]; \
+        buf->head = RING_BUF_ADD(size, buf->head, 1); \
+    } \
+} \
+
 #define DEFINE_RING_BUF_SKIP_FUNCTION(size, ptr_type, data_type, type_name) \
 static inline void type_name ## _skip (type_name ## _type *buf, ptr_type skip_len) { \
     const ptr_type new_head = RING_BUF_ADD(size, buf->head, skip_len); \
-    assert(skip_len < RING_BUF_LEN(size, buf)); \
+    assert((ptr_type)skip_len < (ptr_type)RING_BUF_LEN(size, buf)); \
     buf->head = new_head; \
 } \
 
@@ -108,7 +117,8 @@ static inline void type_name ## _skip (type_name ## _type *buf, ptr_type skip_le
 //   <buf_name>_get(*buf): read one item from the ring buffer
 //   <buf_name>_peek(*buf): read one item from the ring buffer without consuming it
 //   <buf_name>_put(*buf, data_type value): put one item into the ring buffer
-//   <buf_name>_fill(*buf, data_type *value, ptr_type len): put mutiple items in ring buffer
+//   <buf_name>_fill(*buf, data_type *value, ptr_type len): put multiple items in ring buffer
+//   <buf_name>_take(*buf, data_type *value, ptr_type len): get multiple items in ring buffer
 //   <buf_name>_skip(*buf, data_type len): discard `len` items from the ring buffer
 //
 #define DEFINE_RING_BUF_VARIANT(buf_len, ptr_type, data_type, buf_name) \
@@ -121,4 +131,5 @@ static inline void type_name ## _skip (type_name ## _type *buf, ptr_type skip_le
     DEFINE_RING_BUF_PEEK_FUNCTION(buf_len+1, ptr_type, data_type, buf_name) \
     DEFINE_RING_BUF_PUT_FUNCTION(buf_len+1, ptr_type, data_type, buf_name) \
     DEFINE_RING_BUF_FILL_FUNCTION(buf_len+1, ptr_type, data_type, buf_name) \
-    DEFINE_RING_BUF_SKIP_FUNCTION(buf_len+1, ptr_type, data_type, buf_name) \
+    DEFINE_RING_BUF_TAKE_FUNCTION(buf_len+1, ptr_type, data_type, buf_name) \
+    DEFINE_RING_BUF_SKIP_FUNCTION(buf_len+1, ptr_type, data_type, buf_name)
